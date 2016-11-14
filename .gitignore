@@ -54,3 +54,4 @@ Makefile.gcc-orig
 
 /NetHack.VC.opendb
 /build_cmake
+/win/win32/record
