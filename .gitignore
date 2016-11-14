@@ -52,3 +52,5 @@ Makefile.gcc-orig
 *.lastcodeanalysissucceeded
 # Win32-specific ignores end
 
+/NetHack.VC.opendb
+/build_cmake
