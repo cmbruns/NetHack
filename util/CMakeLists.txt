@@ -1,10 +1,12 @@
 
+##############################
+### Generate source files using makedefs ###
+##############################
+
 add_executable(makedefs makedefs.c ../src/monst.c ../src/objects.c)
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dat)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src)
-
-# Generate source files using makedefs
 
 # 1) From util folder
 add_custom_command(
@@ -57,7 +59,9 @@ add_custom_command(
     OUTPUT 
       ${CMAKE_BINARY_DIR}/dat/data
     COMMAND $<TARGET_FILE:makedefs> -d
-    DEPENDS makedefs
+    DEPENDS 
+      makedefs
+      ${CMAKE_BINARY_DIR}/dat/data.base
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating NetHack database (makedefs -d)"
 )
@@ -68,7 +72,10 @@ add_custom_command(
     OUTPUT 
       ${CMAKE_BINARY_DIR}/dat/rumors
     COMMAND $<TARGET_FILE:makedefs> -r
-    DEPENDS makedefs
+    DEPENDS 
+      makedefs
+      ${CMAKE_BINARY_DIR}/dat/rumors.tru
+      ${CMAKE_BINARY_DIR}/dat/rumors.fal
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating rumors (makedefs -r)"
 )
@@ -82,7 +89,11 @@ add_custom_command(
       ${CMAKE_BINARY_DIR}/dat/epitaph
       ${CMAKE_BINARY_DIR}/dat/bogusmon
     COMMAND $<TARGET_FILE:makedefs> -s
-    DEPENDS makedefs
+    DEPENDS 
+      makedefs 
+      ${CMAKE_BINARY_DIR}/dat/epitaph.txt
+      ${CMAKE_BINARY_DIR}/dat/engrave.txt
+      ${CMAKE_BINARY_DIR}/dat/bogusmon.txt
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating ../dat/engrave, ../dat/epitaph, ../dat/bogusmon (makedefs -s)"
 )
@@ -92,7 +103,7 @@ add_custom_command(
     OUTPUT 
       ${CMAKE_BINARY_DIR}/dat/quest.dat
     COMMAND $<TARGET_FILE:makedefs> -q
-    DEPENDS makedefs
+    DEPENDS makedefs ${CMAKE_BINARY_DIR}/dat/quest.txt
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating quests (makedefs -q)"
 )
@@ -102,7 +113,7 @@ add_custom_command(
     OUTPUT 
       ${CMAKE_BINARY_DIR}/dat/oracles
     COMMAND $<TARGET_FILE:makedefs> -h
-    DEPENDS makedefs
+    DEPENDS makedefs ${CMAKE_BINARY_DIR}/dat/oracles.txt
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating oracles (makedefs -h)"
 )
@@ -112,7 +123,7 @@ add_custom_command(
     OUTPUT 
       ${CMAKE_BINARY_DIR}/dat/dungeon.pdf
     COMMAND $<TARGET_FILE:makedefs> -e
-    DEPENDS makedefs
+    DEPENDS makedefs ${CMAKE_BINARY_DIR}/dat/dungeon.def
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
     COMMENT "Generating dungeon.pdf (makedefs -e)"
 )
@@ -134,4 +145,51 @@ add_custom_target(GenerateCode ALL
       ${CMAKE_BINARY_DIR}/dat/oracles
       ${CMAKE_BINARY_DIR}/dat/dungeon.pdf
     COMMENT "Checking if code generation is required"
+)
+
+
+#############
+### uudecode ###
+#############
+
+add_executable(uudecode ../sys/share/uudecode.c)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/win/win32/nethack.ico
+  COMMAND $<TARGET_FILE:uudecode> ${CMAKE_SOURCE_DIR}/sys/winnt/nhico.uu
+  DEPENDS uudecode ${CMAKE_SOURCE_DIR}/sys/winnt/nhico.uu
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/win/win32
+  COMMENT "decoding icon (nhico.uu to NetHack.ico)"
+)
+
+set(UUBMPS mnsel mnselcnt mnunsel petmark pilemark splash rip)
+foreach(UUBMP ${UUBMPS})
+	add_custom_command(
+	  OUTPUT ${CMAKE_BINARY_DIR}/win/win32/${UUBMP}.bmp
+	  COMMAND $<TARGET_FILE:uudecode> ${CMAKE_SOURCE_DIR}/win/win32/${UUBMP}.uu
+	  DEPENDS uudecode ${CMAKE_SOURCE_DIR}/win/win32/${UUBMP}.uu
+	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/win/win32
+	  COMMENT "decoding mnsel (${UUBMP}.uu to ${UUBMP}.bmp)"
+	)
+endforeach()
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/win/win32/record
+  COMMAND $<TARGET_FILE:uudecode> ${CMAKE_SOURCE_DIR}/win/win32/record.uu
+  DEPENDS uudecode ${CMAKE_SOURCE_DIR}/win/win32/record.uu
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/win/win32
+  COMMENT "decoding record (record.uu to record.)"
+)
+
+add_custom_target(DecodeData ALL
+  DEPENDS
+    ${CMAKE_BINARY_DIR}/win/win32/nethack.ico
+    ${CMAKE_BINARY_DIR}/win/win32/mnselcnt.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/mnunsel.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/petmark.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/pilemark.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/splash.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/rip.bmp
+    ${CMAKE_BINARY_DIR}/win/win32/record
+  COMMENT "Checking if data decoding is required"
 )
