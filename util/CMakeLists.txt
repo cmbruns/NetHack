@@ -78,7 +78,7 @@ foreach(UUBMP ${UUBMPS})
 	  COMMAND $<TARGET_FILE:uudecode> ${CMAKE_SOURCE_DIR}/win/win32/${UUBMP}.uu
 	  DEPENDS uudecode ${CMAKE_SOURCE_DIR}/win/win32/${UUBMP}.uu
 	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/win/win32
-	  COMMENT "decoding mnsel (${UUBMP}.uu to ${UUBMP}.bmp)"
+	  COMMENT "decoding ${UUBMP} (${UUBMP}.uu to ${UUBMP}.bmp)"
 	)
 endforeach()
 
@@ -277,3 +277,43 @@ add_custom_target(BuildSpecialLevels ALL
     DEPENDS ${LEVCOMP_OUTPUTS}
     COMMENT "Checking if special levels are built"
 )
+
+################
+### tile2bmp ###
+################
+
+add_definitions(-D TILETEXT=1)
+add_executable(tile2bmp
+  ${CMAKE_SOURCE_DIR}/src/decl.c
+  ${CMAKE_SOURCE_DIR}/src/drawing.c
+  ${CMAKE_SOURCE_DIR}/src/monst.c
+  ${CMAKE_SOURCE_DIR}/src/objects.c
+  ${CMAKE_SOURCE_DIR}/win/share/tile2bmp.c
+  ${CMAKE_SOURCE_DIR}/win/share/tiletext.c
+  # tiletxt.c/tilemap.c is compiled twice, once with TILETEXT defined, and once without
+  ${CMAKE_SOURCE_DIR}/win/share/tiletxt.c
+)
+
+###############
+### dgncomp ###
+###############
+
+add_executable(dgncomp
+  ${CMAKE_SOURCE_DIR}/src/alloc.c
+  ${CMAKE_BINARY_DIR}/util/dgn_lex.c
+  ${CMAKE_SOURCE_DIR}/util/dgn_main.c
+  ${CMAKE_BINARY_DIR}/util/dgn_yacc.c
+  ${CMAKE_SOURCE_DIR}/util/panic.c
+)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/dat/dungeon
+  COMMAND $<TARGET_FILE:dgncomp> dungeon.pdf
+  DEPENDS dgncomp ${CMAKE_BINARY_DIR}/dat/dungeon.pdf
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+  COMMENT "Building dungeon"
+)
+
+add_custom_target(BuildDungeon ALL
+  DEPENDS ${CMAKE_BINARY_DIR}/dat/dungeon
+  COMMENT "Checking if dungeon is built")
