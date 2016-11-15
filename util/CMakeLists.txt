@@ -1,4 +1,12 @@
 
+if (WIN32)
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/win/share/tilemap.c 
+    ${CMAKE_BINARY_DIR}/win/share/tiletxt.c 
+    COPYONLY
+  )
+endif()
+
 ############################################
 ### Generate source files using makedefs ###
 ############################################

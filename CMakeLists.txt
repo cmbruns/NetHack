@@ -14,10 +14,4 @@ include_directories(include)
 # Build makedefs first, before anything else
 add_subdirectory(util)
 
-if (WIN32)
-  configure_file(
-    ${CMAKE_SOURCE_DIR}/win/share/tilemap.c 
-    ${CMAKE_BINARY_DIR}/win/share/tiletxt.c 
-    COPYONLY
-  )
-endif()
+add_subdirectory(src)
