@@ -260,3 +260,144 @@ add_executable(levcomp
   ${CMAKE_SOURCE_DIR}/src/objects.c
   panic.c
 )
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/Arc-goal.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/Arch.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from Arch.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/Bar-goal.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/Barb.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from Barb.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/Cav-goal.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/Caveman.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from Caveman.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/Hea-goal.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/Healer.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from Healer.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/Kni-goal.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/Knight.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from Knight.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/bigrm-1.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-2.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-3.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-4.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-5.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-6.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-7.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-8.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-9.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-10.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/bigroom.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from bigroom.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/castle.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/castle.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from castle.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/astral.lev
+        ${CMAKE_BINARY_DIR}/dat/water.lev
+        ${CMAKE_BINARY_DIR}/dat/fire.lev
+        ${CMAKE_BINARY_DIR}/dat/air.lev
+        ${CMAKE_BINARY_DIR}/dat/earth.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/endgame.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from endgame.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/sanctum.lev
+        ${CMAKE_BINARY_DIR}/dat/baalz.lev
+        ${CMAKE_BINARY_DIR}/dat/asmodeus.lev
+        ${CMAKE_BINARY_DIR}/dat/orcus.lev
+        ${CMAKE_BINARY_DIR}/dat/juiblex.lev
+        ${CMAKE_BINARY_DIR}/dat/valley.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/gehennom.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from gehennom.des"
+)
+
+add_custom_command(
+    OUTPUT 
+        ${CMAKE_BINARY_DIR}/dat/knox.lev
+    COMMAND $<TARGET_FILE:levcomp> ${CMAKE_SOURCE_DIR}/dat/knox.des
+    DEPENDS levcomp
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+    COMMENT "Building special levels from knox.des"
+)
+
+add_custom_target(BuildSpecialLevels ALL
+    DEPENDS
+        ${CMAKE_BINARY_DIR}/dat/Arc-goal.lev
+        ${CMAKE_BINARY_DIR}/dat/Bar-goal.lev
+        ${CMAKE_BINARY_DIR}/dat/Cav-goal.lev
+        ${CMAKE_BINARY_DIR}/dat/Hea-goal.lev
+        ${CMAKE_BINARY_DIR}/dat/Kni-goal.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-1.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-2.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-3.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-4.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-5.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-6.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-7.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-8.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-9.lev
+        ${CMAKE_BINARY_DIR}/dat/bigrm-10.lev
+        ${CMAKE_BINARY_DIR}/dat/castle.lev
+        ${CMAKE_BINARY_DIR}/dat/astral.lev
+        ${CMAKE_BINARY_DIR}/dat/water.lev
+        ${CMAKE_BINARY_DIR}/dat/fire.lev
+        ${CMAKE_BINARY_DIR}/dat/air.lev
+        ${CMAKE_BINARY_DIR}/dat/earth.lev
+        ${CMAKE_BINARY_DIR}/dat/sanctum.lev
+        ${CMAKE_BINARY_DIR}/dat/baalz.lev
+        ${CMAKE_BINARY_DIR}/dat/asmodeus.lev
+        ${CMAKE_BINARY_DIR}/dat/orcus.lev
+        ${CMAKE_BINARY_DIR}/dat/juiblex.lev
+        ${CMAKE_BINARY_DIR}/dat/valley.lev
+        ${CMAKE_BINARY_DIR}/dat/knox.lev        
+    COMMENT "Checking if special levels are built"
+)
