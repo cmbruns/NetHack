@@ -1332,7 +1332,7 @@ int how;
         raw_print("");
         raw_print("");
     }
-    terminate(EXIT_SUCCESS);
+    terminate_nethack(EXIT_SUCCESS);
 }
 
 void
@@ -1407,7 +1407,7 @@ boolean identified, all_containers, reportempty;
 
 /* should be called with either EXIT_SUCCESS or EXIT_FAILURE */
 void
-terminate(status)
+terminate_nethack(status)
 int status;
 {
     program_state.in_moveloop = 0; /* won't be returning to normal play */

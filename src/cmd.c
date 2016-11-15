@@ -4656,7 +4656,7 @@ end_of_input()
     if (iflags.window_inited)
         exit_nhwindows((char *) 0);
     clearlocks();
-    terminate(EXIT_SUCCESS);
+    terminate_nethack(EXIT_SUCCESS);
     /*NOTREACHED*/ /* not necessarily true for vms... */
     return;
 }

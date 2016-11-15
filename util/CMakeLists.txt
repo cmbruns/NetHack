@@ -278,22 +278,6 @@ add_custom_target(BuildSpecialLevels ALL
     COMMENT "Checking if special levels are built"
 )
 
-################
-### tile2bmp ###
-################
-
-add_definitions(-D TILETEXT=1)
-add_executable(tile2bmp
-  ${CMAKE_SOURCE_DIR}/src/decl.c
-  ${CMAKE_SOURCE_DIR}/src/drawing.c
-  ${CMAKE_SOURCE_DIR}/src/monst.c
-  ${CMAKE_SOURCE_DIR}/src/objects.c
-  ${CMAKE_SOURCE_DIR}/win/share/tile2bmp.c
-  ${CMAKE_SOURCE_DIR}/win/share/tiletext.c
-  # tiletxt.c/tilemap.c is compiled twice, once with TILETEXT defined, and once without
-  ${CMAKE_SOURCE_DIR}/win/share/tiletxt.c
-)
-
 ###############
 ### dgncomp ###
 ###############
@@ -317,3 +301,67 @@ add_custom_command(
 add_custom_target(BuildDungeon ALL
   DEPENDS ${CMAKE_BINARY_DIR}/dat/dungeon
   COMMENT "Checking if dungeon is built")
+
+###############
+### recover ###
+###############
+
+add_executable(recover ${CMAKE_SOURCE_DIR}/util/recover.c)
+install(TARGETS recover DESTINATION bin)
+
+###############
+### tilemap ###
+###############
+
+add_executable(tilemap ${CMAKE_SOURCE_DIR}/win/share/tilemap.c)
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/src/tile.c
+  COMMAND $<TARGET_FILE:tilemap>
+  DEPENDS tilemap
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/src
+  COMMENT "Generating src/tile.c"
+)
+add_custom_target(GenerateTileC
+  DEPENDS ${CMAKE_BINARY_DIR}/src/tile.c
+  COMMENT "Checking if tile.c is generated"
+)
+
+################
+### dlb_main ###
+################
+
+add_definitions(-D DLB=1)
+add_executable(dlb_main
+  ${CMAKE_SOURCE_DIR}/src/alloc.c
+  ${CMAKE_SOURCE_DIR}/src/dlb.c
+  ${CMAKE_SOURCE_DIR}/util/dlb_main.c
+  ${CMAKE_SOURCE_DIR}/util/panic.c
+)
+
+add_custom_command(
+  OUTPUT ${CMAKE_BINARY_DIR}/dat/dlb.lst
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+  # TODO: Lots of commands go here...
+  COMMENT "Packaging via DLB"
+)
+
+add_custom_target(PackageDLB ALL
+  DEPENDS ${CMAKE_BINARY_DIR}/dat/dlb.lst
+  COMMENT "Checking if DLB packaging is done"
+)
+
+################
+### tile2bmp ###
+################
+
+add_executable(tile2bmp
+  ${CMAKE_SOURCE_DIR}/src/decl.c
+  ${CMAKE_SOURCE_DIR}/src/drawing.c
+  ${CMAKE_SOURCE_DIR}/src/monst.c
+  ${CMAKE_SOURCE_DIR}/src/objects.c
+  ${CMAKE_SOURCE_DIR}/win/share/tile2bmp.c
+  ${CMAKE_SOURCE_DIR}/win/share/tiletext.c
+  # tiletxt.c/tilemap.c is compiled twice, once with TILETEXT defined, and once without
+  ${CMAKE_BINARY_DIR}/win/share/tiletxt.c
+)
+target_compile_definitions(tile2bmp PRIVATE TILETEXT=1)

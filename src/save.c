@@ -94,7 +94,7 @@ dosave()
             /* make sure they see the Saving message */
             display_nhwindow(WIN_MESSAGE, TRUE);
             exit_nhwindows("Be seeing you...");
-            terminate(EXIT_SUCCESS);
+            terminate_nethack(EXIT_SUCCESS);
         } else
             (void) doredraw();
     }
