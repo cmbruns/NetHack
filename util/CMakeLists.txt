@@ -1,7 +1,7 @@
 
-##############################
+############################################
 ### Generate source files using makedefs ###
-##############################
+############################################
 
 add_executable(makedefs makedefs.c ../src/monst.c ../src/objects.c)
 
@@ -148,9 +148,9 @@ add_custom_target(GenerateCode ALL
 )
 
 
-#############
+################
 ### uudecode ###
-#############
+################
 
 add_executable(uudecode ../sys/share/uudecode.c)
 
@@ -192,4 +192,71 @@ add_custom_target(DecodeData ALL
     ${CMAKE_BINARY_DIR}/win/win32/rip.bmp
     ${CMAKE_BINARY_DIR}/win/win32/record
   COMMENT "Checking if data decoding is required"
+)
+
+###########################
+### levstuff & dgnstuff ###
+###########################
+
+if (yacc)
+  message(SEND_ERROR "yacc rules not implemented")
+else()
+  message(STATUS "Using pre-built lev_yacc.c and lev_comp.h")
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/lev_yacc.c 
+    ${CMAKE_BINARY_DIR}/util/lev_yacc.c
+    COPYONLY
+  )
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/lev_comp.h
+    ${CMAKE_BINARY_DIR}/include/lev_comp.h
+    COPYONLY
+  )
+  
+  message(STATUS "Using pre-built dgn_yacc.c and dgn_comp.h")
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/dgn_yacc.c
+    ${CMAKE_BINARY_DIR}/util/dgn_yacc.c
+    COPYONLY
+  )
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/dgn_comp.h
+    ${CMAKE_BINARY_DIR}/include/dgn_comp.h
+    COPYONLY
+  )
+endif()
+
+if (lex)
+  message(SEND_ERROR "lex rules not implemented")
+else()
+  message(STATUS "Using pre-built lev_lex.c")
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/lev_lex.c
+    ${CMAKE_BINARY_DIR}/util/lev_lex.c
+    COPYONLY
+  )
+
+  message(STATUS "Using pre-built dgn_lex.c")
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/sys/share/dgn_lex.c
+    ${CMAKE_BINARY_DIR}/util/dgn_lex.c
+  )
+
+endif()
+
+
+###############
+### levcomp ###
+###############
+
+add_executable(levcomp
+  ${CMAKE_SOURCE_DIR}/src/alloc.c
+  ${CMAKE_SOURCE_DIR}/src/decl.c
+  ${CMAKE_SOURCE_DIR}/src/drawing.c
+  ${CMAKE_BINARY_DIR}/util/lev_lex.c
+  lev_main.c
+  ${CMAKE_BINARY_DIR}/util/lev_yacc.c
+  ${CMAKE_SOURCE_DIR}/src/monst.c
+  ${CMAKE_SOURCE_DIR}/src/objects.c
+  panic.c
 )
