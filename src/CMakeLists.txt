@@ -2,4 +2,140 @@
 if(MSVC)
   add_library(nhdefkey SHARED ../sys/winnt/nhdefkey.c)
 endif()
-install(TARGETS nhdefkey DESTINATION bin)
+install(TARGETS nhdefkey DESTINATION .)
+
+install(FILES
+	../winnt/defaults.nh
+	../doc/Guidebook.txt
+	../dat/license
+	
+	DESTINATION .)	
+
+set(NH_SRCS
+  allmain.c
+  alloc.c
+  apply.c
+  artifact.c
+  attrib.c
+  ball.c
+  bones.c
+  botl.c
+  cmd.c
+  ../sys/share/cppregex.cpp
+  dbridge.c
+  decl.c
+  detect.c
+  dig.c
+  display.c
+  dlb.c
+  do.c
+  do_name.c
+  do_wear.c
+  dog.c
+  dogmove.c
+  dokick.c
+  dothrow.c
+  drawing.c
+  dungeon.c
+  eat.c
+  end.c
+  engrave.c
+  exper.c
+  explode.c
+  extralev.c
+  files.c
+  fountain.c
+  ../win/tty/getline.c
+  hack.c
+  hacklib.c
+  invent.c
+  light.c
+  lock.c
+  mail.c
+  makemon.c
+  mapglyph.c
+  mcastu.c
+  mhitm.c
+  mhitu.c
+  minion.c
+  mklev.c
+  mkmap.c
+  mkmaze.c
+  mkobj.c
+  mkroom.c
+  mon.c
+  mondata.c
+  monmove.c
+  monst.c
+  ${CMAKE_BINARY_DIR}/src/monstr.c
+  mplayer.c
+  mthrowu.c
+  muse.c
+  music.c
+  ../sys/share/nhlan.c
+  ../sys/winnt/ntsound.c
+  ../sys/winnt/nttty.c
+  o_init.c
+  objects.c
+  objnam.c
+  options.c
+  pager.c
+  ../sys/share/pcmain.c
+  ../sys/share/pcsys.c
+  ../sys/share/pcunix.c
+  pickup.c
+  pline.c
+  polyself.c
+  potion.c
+  pray.c
+  priest.c
+  quest.c
+  questpgr.c
+  ../sys/share/random.c
+  read.c
+  rect.c
+  region.c
+  restore.c
+  rip.c
+  rnd.c
+  role.c
+  rumors.c
+  save.c
+  shk.c
+  shknam.c
+  sit.c
+  sounds.c
+  sp_lev.c
+  spell.c
+  steal.c
+  steed.c
+  ../sys/winnt/stubs.c
+  sys.c
+  teleport.c
+  ${CMAKE_BINARY_DIR}/src/tile.c
+  timeout.c
+  ../win/tty/topl.c
+  topten.c
+  track.c
+  trap.c
+  u_init.c
+  uhitm.c
+  vault.c
+  version.c
+  vision.c
+  weapon.c
+  were.c
+  wield.c
+  windows.c
+  ../sys/winnt/winnt.c
+  ../win/tty/wintty.c
+  wizard.c
+  worm.c
+  worn.c
+  write.c
+  zap.c
+)
+
+add_executable(NetHack ${NH_SRCS})
+target_link_libraries(NetHack winmm.lib) # Avoid sndPlaySound link error
+install(TARGETS NetHack DESTINATION .)

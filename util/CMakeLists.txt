@@ -315,7 +315,7 @@ add_custom_target(BuildDungeon ALL
 ###############
 
 add_executable(recover ${CMAKE_SOURCE_DIR}/util/recover.c)
-install(TARGETS recover DESTINATION bin)
+install(TARGETS recover DESTINATION .)
 
 ###############
 ### tilemap ###
@@ -338,25 +338,26 @@ add_custom_target(GenerateTileC
 ### dlb_main ###
 ################
 
-add_definitions(-D DLB=1)
-add_executable(dlb_main
-  ${CMAKE_SOURCE_DIR}/src/alloc.c
-  ${CMAKE_SOURCE_DIR}/src/dlb.c
-  ${CMAKE_SOURCE_DIR}/util/dlb_main.c
-  ${CMAKE_SOURCE_DIR}/util/panic.c
-)
+if (NETHACK_USE_DATA_LIBRARIAN)
+	add_executable(dlb_main
+	  ${CMAKE_SOURCE_DIR}/src/alloc.c
+	  ${CMAKE_SOURCE_DIR}/src/dlb.c
+	  ${CMAKE_SOURCE_DIR}/util/dlb_main.c
+	  ${CMAKE_SOURCE_DIR}/util/panic.c
+	)
 
-add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/dat/dlb.lst
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
-  # TODO: Lots of commands go here...
-  COMMENT "Packaging via DLB"
-)
+	add_custom_command(
+	  OUTPUT ${CMAKE_BINARY_DIR}/dat/dlb.lst
+	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
+	  # TODO: Lots of commands go here...
+	  COMMENT "Packaging via DLB"
+	)
 
-add_custom_target(PackageDLB ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/dat/dlb.lst
-  COMMENT "Checking if DLB packaging is done"
-)
+	add_custom_target(PackageDLB ALL
+	  DEPENDS ${CMAKE_BINARY_DIR}/dat/dlb.lst
+	  COMMENT "Checking if DLB packaging is done"
+	)
+endif()
 
 ################
 ### tile2bmp ###
