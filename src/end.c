@@ -1424,7 +1424,7 @@ int status;
 #ifdef VMS
     /*
      *  This is liable to draw a warning if compiled with gcc, but it's
-     *  more important to flag panic() -> really_done() -> terminate()
+     *  more important to flag panic() -> really_done() -> terminate_nethack()
      *  as __noreturn__ then to avoid the warning.
      */
     /* don't call exit() if already executing within an exit handler;

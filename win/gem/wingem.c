@@ -129,7 +129,7 @@ const char *mesg;
 {
     clearlocks();
     Gem_exit_nhwindows(mesg);
-    terminate(EXIT_SUCCESS);
+    terminate_nethack(EXIT_SUCCESS);
     /*NOTREACHED*/
 }
 

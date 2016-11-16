@@ -725,7 +725,7 @@ register unsigned num;
     if (failed) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
         if (program_state.done_hup)
-            terminate(EXIT_FAILURE);
+            terminate_nethack(EXIT_FAILURE);
         else
 #endif
             panic("cannot write %u bytes to file #%d", num, fd);
@@ -831,7 +831,7 @@ register int fd;
         if (write(fd, outbuf, outbufp) != outbufp) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
             if (program_state.done_hup)
-                terminate(EXIT_FAILURE);
+                terminate_nethack(EXIT_FAILURE);
             else
 #endif
                 zerocomp_bclose(fd); /* panic (outbufp != 0) */
@@ -857,7 +857,7 @@ register unsigned num;
         if ((unsigned) write(fd, loc, num) != num) {
 #if defined(UNIX) || defined(VMS) || defined(__EMX__)
             if (program_state.done_hup)
-                terminate(EXIT_FAILURE);
+                terminate_nethack(EXIT_FAILURE);
             else
 #endif
                 panic("cannot write %u bytes to file #%d", num, fd);

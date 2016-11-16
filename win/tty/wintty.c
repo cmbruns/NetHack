@@ -2660,7 +2660,7 @@ boolean complain;
             }
             if (complain)
                 sleep(10); /* want to wait_synch() but stdin is gone */
-            terminate(EXIT_FAILURE);
+            terminate_nethack(EXIT_FAILURE);
         }
         (void) close(fd);
 #ifdef notyet
