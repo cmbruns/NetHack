@@ -1,4 +1,4 @@
-/* NetHack 3.6	hack.h	$NHDT-Date: 1451683048 2016/01/01 21:17:28 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.68 $ */
+/* NetHack 3.6	hack.h	$NHDT-Date: 1490908464 2017/03/30 21:14:24 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.76 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -296,9 +296,9 @@ enum hmon_atkmode_types {
 #define FORCETRAP 0x01     /* triggering not left to chance */
 #define NOWEBMSG 0x02      /* suppress stumble into web message */
 #define FORCEBUNGLE 0x04   /* adjustments appropriate for bungling */
-#define RECURSIVETRAP 0x08 /* trap changed into another type this same turn \
-                              */
+#define RECURSIVETRAP 0x08 /* trap changed into another type this same turn */
 #define TOOKPLUNGE 0x10    /* used '>' to enter pit below you */
+#define VIASITTING 0x20    /* #sit while at trap location (affects message) */
 
 /* Flags to control test_move in hack.c */
 #define DO_MOVE 0   /* really doing the move */
@@ -358,6 +358,12 @@ enum explosion_types {
 #define XKILL_NOMSG     1
 #define XKILL_NOCORPSE  2
 #define XKILL_NOCONDUCT 4
+
+/* pline_flags; mask values for custompline()'s first argument */
+/* #define PLINE_ORDINARY 0 */
+#define PLINE_NOREPEAT   1
+#define OVERRIDE_MSGTYPE 2
+#define SUPPRESS_HISTORY 4
 
 /* Macros for messages referring to hands, eyes, feet, etc... */
 enum bodypart_types {

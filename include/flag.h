@@ -201,6 +201,7 @@ struct instance_flags {
     boolean vision_inited; /* true if vision is ready */
     boolean sanity_check;  /* run sanity checks */
     boolean mon_polycontrol; /* debug: control monster polymorphs */
+    boolean in_dumplog;    /* doing the dumplog right now? */
 
     /* stuff that is related to options and/or user or platform preferences
      */
@@ -232,6 +233,7 @@ struct instance_flags {
     boolean echo;             /* 1 to echo characters */
     boolean use_menu_color;       /* use color in menus; only if wc_color */
     boolean use_status_hilites;   /* use color in status line */
+    boolean status_updates;   /* allow updates to bottom status lines */
     boolean use_background_glyph; /* use background glyph when appropriate */
     boolean hilite_pile;          /* mark piles of objects with a hilite */
     boolean autodescribe;     /* autodescribe mode in getpos() */

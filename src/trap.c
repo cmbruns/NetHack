@@ -1,4 +1,4 @@
-/* NetHack 3.6	trap.c	$NHDT-Date: 1473665044 2016/09/12 07:24:04 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.274 $ */
+/* NetHack 3.6	trap.c	$NHDT-Date: 1489745987 2017/03/17 10:19:47 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.277 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -850,6 +850,7 @@ unsigned trflags;
             webmsgok = (trflags & NOWEBMSG) == 0,
             forcebungle = (trflags & FORCEBUNGLE) != 0,
             plunged = (trflags & TOOKPLUNGE) != 0,
+            viasitting = (trflags & VIASITTING) != 0,
             adj_pit = conjoined_pits(trap, t_at(u.ux0, u.uy0), TRUE);
     int oldumort;
     int steed_article = ARTICLE_THE;
@@ -1237,7 +1238,7 @@ unsigned trflags;
 
     case LEVEL_TELEP:
         seetrap(trap);
-        level_tele_trap(trap);
+        level_tele_trap(trap, trflags);
         break;
 
     case WEB: /* Our luckless player has stumbled into a web. */
@@ -1253,7 +1254,7 @@ unsigned trflags;
         if (webmsgok) {
             char verbbuf[BUFSZ];
 
-            if (forcetrap) {
+            if (forcetrap || viasitting) {
                 Strcpy(verbbuf, "are caught by");
             } else if (u.usteed) {
                 Sprintf(verbbuf, "lead %s into",
@@ -1382,15 +1383,17 @@ unsigned trflags;
         char verbbuf[BUFSZ];
 
         seetrap(trap);
-        if (u.usteed)
-            Sprintf(verbbuf, "lead %s",
+        if (viasitting)
+            Strcpy(verbbuf, "trigger"); /* follows "You sit down." */
+        else if (u.usteed)
+            Sprintf(verbbuf, "lead %s onto",
                     x_monnam(u.usteed, steed_article, (char *) 0,
                              SUPPRESS_SADDLE, FALSE));
         else
-            Sprintf(verbbuf, "%s", Levitation
-                                       ? (const char *) "float"
-                                       : locomotion(youmonst.data, "step"));
-        You("%s onto a polymorph trap!", verbbuf);
+            Sprintf(verbbuf, "%s onto",
+                    Levitation ? (const char *) "float"
+                               : locomotion(youmonst.data, "step"));
+        You("%s a polymorph trap!", verbbuf);
         if (Antimagic || Unchanging) {
             shieldeff(u.ux, u.uy);
             You_feel("momentarily different.");
@@ -4417,6 +4420,8 @@ boolean *noticed; /* set to true iff hero notices the effect; */
     const char *trapdescr, *which;
     boolean ishero = (mon == &youmonst);
 
+    if (!mon)
+        return FALSE;
     if (mon == u.usteed)
         ishero = TRUE;
     t = t_at(ishero ? u.ux : mon->mx, ishero ? u.uy : mon->my);
@@ -4475,6 +4480,8 @@ boolean *noticed; /* set to true iff hero notices the effect; */
     unsigned dotrapflags;
     boolean ishero = (mon == &youmonst), result;
 
+    if (!mon)
+        return FALSE;
     if (mon == u.usteed)
         ishero = TRUE;
     t = t_at(ishero ? u.ux : mon->mx, ishero ? u.uy : mon->my);
@@ -4518,6 +4525,8 @@ boolean *noticed; /* set to true iff hero notices the effect; */
     struct trap *t;
     boolean ishero = (mon == &youmonst), result;
 
+    if (!mon)
+        return FALSE;
     if (mon == u.usteed)
         ishero = TRUE;
     t = t_at(ishero ? u.ux : mon->mx, ishero ? u.uy : mon->my);

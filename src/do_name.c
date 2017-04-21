@@ -1,4 +1,4 @@
-/* NetHack 3.6	do_name.c	$NHDT-Date: 1452669022 2016/01/13 07:10:22 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.90 $ */
+/* NetHack 3.6	do_name.c	$NHDT-Date: 1489494376 2017/03/14 12:26:16 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.116 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -412,9 +412,10 @@ int cx, cy;
     cc.y = cy;
     if (do_screen_description(cc, TRUE, sym, tmpbuf, &firstmatch)) {
         (void) coord_desc(cx, cy, tmpbuf, iflags.getpos_coords);
-        pline("%s%s%s%s", firstmatch, *tmpbuf ? " " : "", tmpbuf,
-              (iflags.getloc_travelmode && !is_valid_travelpt(cx,cy))
-              ? " (no travel path)" : "");
+        custompline(SUPPRESS_HISTORY,
+                    "%s%s%s%s", firstmatch, *tmpbuf ? " " : "", tmpbuf,
+                    (iflags.getloc_travelmode && !is_valid_travelpt(cx, cy))
+                      ? " (no travel path)" : "");
         curs(WIN_MAP, cx, cy);
         flush_screen(0);
     }
@@ -1011,10 +1012,12 @@ do_mname()
         (void) christen_monst(mtmp, buf);
 }
 
+STATIC_VAR int via_naming = 0;
+
 /*
- * This routine changes the address of obj. Be careful not to call it
- * when there might be pointers around in unknown places. For now: only
- * when obj is in the inventory.
+ * This routine used to change the address of 'obj' so be unsafe if not
+ * used with extreme care.  Applying a name to an object no longer
+ * allocates a replacement object, so that old risk is gone.
  */
 STATIC_OVL
 void
@@ -1079,7 +1082,9 @@ register struct obj *obj;
         display_nhwindow(WIN_MESSAGE, FALSE);
         You("engrave: \"%s\".", buf);
     }
+    ++via_naming; /* This ought to be an argument rather than a static... */
     obj = oname(obj, buf);
+    --via_naming; /* ...but oname() is used in a lot of places, so defer. */
 }
 
 struct obj *
@@ -1119,8 +1124,10 @@ const char *name;
         /* if obj is owned by a shop, increase your bill */
         if (obj->unpaid)
             alter_cost(obj, 0L);
-        /* violate illiteracy conduct since successfully wrote arti-name */
-        u.uconduct.literate++;
+        if (via_naming) {
+            /* violate illiteracy conduct since successfully wrote arti-name */
+            u.uconduct.literate++;
+        }
     }
     if (carried(obj))
         update_inventory();

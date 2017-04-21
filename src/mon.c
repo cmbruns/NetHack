@@ -1,4 +1,4 @@
-/* NetHack 3.6	mon.c	$NHDT-Date: 1466289475 2016/06/18 22:37:55 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.227 $ */
+/* NetHack 3.6	mon.c	$NHDT-Date: 1492733171 2017/04/21 00:06:11 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.237 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -582,6 +582,7 @@ mcalcmove(mon)
 struct monst *mon;
 {
     int mmove = mon->data->mmove;
+    int mmove_adj;
 
     /* Note: MSLOW's `+ 1' prevents slowed speed 1 getting reduced to 0;
      *       MFAST's `+ 2' prevents hasted speed 1 from becoming a no-op;
@@ -592,20 +593,23 @@ struct monst *mon;
     else if (mon->mspeed == MFAST)
         mmove = (4 * mmove + 2) / 3;
 
-    if (mon == u.usteed) {
-        if (u.ugallop && context.mv) {
-            /* average movement is 1.50 times normal */
-            mmove = ((rn2(2) ? 4 : 5) * mmove) / 3;
-        }
-    } else if (mmove) {
-        /* vary movement points allocated to slightly reduce predictability;
-           random increment (avg +2) exceeds random decrement (avg +1) by
-           a small amount; normal speed monsters will occasionally get an
-           extra move and slow ones won't be quite as slow */
-        mmove += rn2(5) - rn2(3); /* + 0..4 - 0..2, average net +1 */
-        if (mmove < 1)
-            mmove = 1;
+    if (mon == u.usteed && u.ugallop && context.mv) {
+        /* increase movement by a factor of 1.5; also increase variance of
+           movement speed (if it's naturally 24, we don't want it to always
+           become 36) */
+        mmove = ((rn2(2) ? 4 : 5) * mmove) / 3;
     }
+
+    /* Randomly round the monster's speed to a multiple of NORMAL_SPEED. This
+       makes it impossible for the player to predict when they'll get a free
+       turn (thus preventing exploits like "melee kiting"), while retaining
+       guarantees about shopkeepers not being outsped by a normal-speed player,
+       normal-speed players being unable to open up a gap when fleeing a
+       normal-speed monster, etc.*/
+    mmove_adj = mmove % NORMAL_SPEED;
+    mmove -= mmove_adj;
+    if (rn2(NORMAL_SPEED) < mmove_adj)
+        mmove += NORMAL_SPEED;
 
     return mmove;
 }
@@ -925,7 +929,8 @@ struct monst *mtmp;
                        || otmp->otyp == RIN_SLOW_DIGESTION)
                    /* cockatrice corpses handled above; this
                       touch_petrifies() check catches eggs */
-                   || ((otmp->otyp == CORPSE || otmp->otyp == EGG)
+                   || ((otmp->otyp == CORPSE || otmp->otyp == EGG
+                        || otmp->globby)
                        && ((touch_petrifies(&mons[otmp->corpsenm])
                             && !resists_ston(mtmp))
                            || (otmp->corpsenm == PM_GREEN_SLIME
@@ -2025,6 +2030,8 @@ struct monst *mdef;
     /* hero is thrown from his steed when it disappears */
     if (mdef == u.usteed)
         dismount_steed(DISMOUNT_GENERIC);
+    /* stuck to you? release */
+    unstuck(mdef);
     /* drop special items like the Amulet so that a dismissed Kop or nurse
        can't remove them from the game */
     mdrop_special_objs(mdef);
@@ -2445,6 +2452,16 @@ struct monst *mtmp;
     return TRUE;
 }
 
+/* drop monster into "limbo" - that is, migrate to the current level */
+void
+m_into_limbo(mtmp)
+struct monst *mtmp;
+{
+    unstuck(mtmp);
+    mdrop_special_objs(mtmp);
+    migrate_to_level(mtmp, ledger_no(&u.uz), MIGR_APPROX_XY, NULL);
+}
+
 /* make monster mtmp next to you (if possible);
    might place monst on far side of a wall or boulder */
 void
@@ -2461,7 +2478,11 @@ struct monst *mtmp;
         return;
     }
 
-    if (!enexto(&mm, u.ux, u.uy, mtmp->data))
+    if (!enexto(&mm, u.ux, u.uy, mtmp->data)) {
+        m_into_limbo(mtmp);
+        return;
+    }
+    if (!isok(mm.x, mm.y))
         return;
     rloc_to(mtmp, mm.x, mm.y);
     if (!in_mklev && (mtmp->mstrategy & STRAT_APPEARMSG)) {
@@ -2498,8 +2519,8 @@ struct monst *mtmp;
 /* mnearto()
  * Put monster near (or at) location if possible.
  * Returns:
- *      1 - if a monster was moved from x, y to put mtmp at x, y.
- *      0 - in most cases.
+ *  true if relocation was successful
+ *  false otherwise
  */
 boolean
 mnearto(mtmp, x, y, move_other)
@@ -2512,7 +2533,7 @@ boolean move_other; /* make sure mtmp gets to x, y! so move m_at(x, y) */
     coord mm;
 
     if (mtmp->mx == x && mtmp->my == y)
-        return FALSE;
+        return TRUE;
 
     if (move_other && (othermon = m_at(x, y)) != 0) {
         if (othermon->wormno)
@@ -2530,6 +2551,8 @@ boolean move_other; /* make sure mtmp gets to x, y! so move m_at(x, y) */
          */
         if (!enexto(&mm, newx, newy, mtmp->data))
             return FALSE;
+        if (!isok(mm.x,mm.y))
+            return FALSE;
         newx = mm.x;
         newy = mm.y;
     }
@@ -2541,16 +2564,14 @@ boolean move_other; /* make sure mtmp gets to x, y! so move m_at(x, y) */
         othermon->mx = othermon->my = 0;
         (void) mnearto(othermon, x, y, FALSE);
         if (othermon->mx == 0 && othermon->my == 0) {
-            /* reloc failed, dump monster into "limbo"
-               (aka migrate to current level) */
+            /* reloc failed */
             othermon->mx = oldx;
             othermon->my = oldy;
-            mdrop_special_objs(othermon);
-            migrate_to_level(othermon, ledger_no(&u.uz), MIGR_APPROX_XY, NULL);
+            m_into_limbo(othermon);
         }
     }
 
-    return FALSE;
+    return TRUE;
 }
 
 /* monster responds to player action; not the same as a passive attack;
@@ -2585,9 +2606,9 @@ struct monst *mtmp;
 
 /* Called whenever the player attacks mtmp; also called in other situations
    where mtmp gets annoyed at the player. Handles mtmp getting annoyed at the
-   attack and any ramifications that might have. Useful also in situations where
-   mtmp was already hostile; it checks for situations where the player shouldn't
-   be attacking and any ramifications /that/ might have. */
+   attack and any ramifications that might have. Useful also in situations
+   where mtmp was already hostile; it checks for situations where the player
+   shouldn't be attacking and any ramifications /that/ might have. */
 void
 setmangry(mtmp, via_attack)
 struct monst *mtmp;
@@ -2595,13 +2616,13 @@ boolean via_attack;
 {
     if (via_attack && sengr_at("Elbereth", u.ux, u.uy, TRUE)) {
         You_feel("like a hypocrite.");
-        /* AIS: Yes, I know alignment penalties and bonuses aren't balanced at
-           the moment. This is about correct relative to other "small"
-           penalties; it should be fairly large, as attacking while standing on
-           an Elbereth means that you're requesting peace and then violating
-           your own request. I know 5 isn't actually large, but it's
-           intentionally larger than the 1s and 2s that are normally given for
-           this sort of thing. */
+        /* AIS: Yes, I know alignment penalties and bonuses aren't balanced
+           at the moment. This is about correct relative to other "small"
+           penalties; it should be fairly large, as attacking while standing
+           on an Elbereth means that you're requesting peace and then
+           violating your own request. I know 5 isn't actually large, but
+           it's intentionally larger than the 1s and 2s that are normally
+           given for this sort of thing. */
         adjalign(-5);
 
         if (!Blind)
@@ -2647,20 +2668,30 @@ boolean via_attack;
                     ++got_mad;
             }
         }
-        if (got_mad && !Hallucination)
-            pline_The("%s appear%s to be angry too...",
-                      got_mad == 1 ? q_guardian->mname
-                                   : makeplural(q_guardian->mname),
-                      got_mad == 1 ? "s" : "");
+        if (got_mad && !Hallucination) {
+            const char *who = q_guardian->mname;
+
+            if (got_mad > 1)
+                who = makeplural(who);
+            pline_The("%s %s to be angry too...",
+                      who, vtense(who, "appear"));
+        }
     }
 
     /* make other peaceful monsters react */
     if (!context.mon_moving) {
+        static const char *const Exclam[] = {
+            "Gasp!", "Uh-oh.", "Oh my!", "What?", "Why?",
+        };
         struct monst *mon;
+        int mndx = monsndx(mtmp->data);
 
         for (mon = fmon; mon; mon = mon->nmon) {
             if (DEADMONSTER(mon))
                 continue;
+            if (mon == mtmp) /* the mpeaceful test catches this since mtmp */
+                continue;    /* is no longer peaceful, but be explicit...  */
+
             if (!mindless(mon->data) && mon->mpeaceful
                 && couldsee(mon->mx, mon->my) && !mon->msleeping
                 && mon->mcansee && m_canseeu(mon)) {
@@ -2671,32 +2702,38 @@ boolean via_attack;
                         verbalize("Halt!  You're under arrest!");
                         (void) angry_guards(!!Deaf);
                     } else {
-                        const char *exclam[] = {
-                            "Gasp!", "Uh-oh.", "Oh my!", "What?", "Why?"
-                        };
                         if (!rn2(5)) {
-                            verbalize("%s", exclam[mon->m_id % SIZE(exclam)]);
+                            verbalize("%s", Exclam[mon->m_id % SIZE(Exclam)]);
                             exclaimed = TRUE;
                         }
-                        if (!mon->isshk && !mon->ispriest
-                            && (mon->data->mlevel < rn2(10))) {
-                            monflee(mon, rn2(50)+25, TRUE, !exclaimed);
+                        /* shopkeepers and temple priests might gasp in
+                           surprise, but they won't become angry here */
+                        if (mon->isshk || mon->ispriest)
+                            continue;
+
+                        if (mon->data->mlevel < rn2(10)) {
+                            monflee(mon, rn2(50) + 25, TRUE, !exclaimed);
                             exclaimed = TRUE;
                         }
-                        if (!mon->isshk && !mon->ispriest) {
+                        if (mon->mtame) {
+                            /* mustn't set mpeaceful to 0 as below;
+                               perhaps reduce tameness? */
+                        } else {
                             mon->mpeaceful = 0;
                             adjalign(-1);
                             if (!exclaimed)
                                 pline("%s gets angry!", Monnam(mon));
                         }
                     }
-                } else if ((mtmp->data == mon->data) && !rn2(3)) {
+                } else if (mon->data->mlet == mtmp->data->mlet
+                           && big_little_match(mndx, monsndx(mon->data))
+                           && !rn2(3)) {
                     if (!rn2(4)) {
                         growl(mon);
                         exclaimed = TRUE;
                     }
                     if (rn2(6))
-                        monflee(mon, rn2(25)+15, TRUE, !exclaimed);
+                        monflee(mon, rn2(25) + 15, TRUE, !exclaimed);
                 }
             }
         }

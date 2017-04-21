@@ -1,4 +1,4 @@
-/* NetHack 3.6	extern.h	$NHDT-Date: 1471112244 2016/08/13 18:17:24 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.570 $ */
+/* NetHack 3.6	extern.h	$NHDT-Date: 1492733169 2017/04/21 00:06:09 $  $NHDT-Branch: NetHack-3.6.0 $:$NHDT-Revision: 1.586 $ */
 /* Copyright (c) Steve Creps, 1988.				  */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -141,6 +141,8 @@ E int NDECL(getbones);
 
 /* ### botl.c ### */
 
+E char *NDECL(do_statusline1);
+E char *NDECL(do_statusline2);
 E int FDECL(xlev_to_rank, (int));
 E int FDECL(title_to_mon, (const char *, int *, int *));
 E void NDECL(max_rank_sz);
@@ -209,7 +211,7 @@ E int FDECL(isok, (int, int));
 E int FDECL(get_adjacent_loc,
             (const char *, const char *, XCHAR_P, XCHAR_P, coord *));
 E const char *FDECL(click_to_cmd, (int, int, int));
-E char FDECL(get_count, (char *, CHAR_P, long, long *));
+E char FDECL(get_count, (char *, CHAR_P, long, long *, BOOLEAN_P));
 #ifdef HANGUPHANDLING
 E void FDECL(hangup, (int));
 E void NDECL(end_of_input);
@@ -268,6 +270,7 @@ E void NDECL(warnreveal);
 E int FDECL(dosearch0, (int));
 E int NDECL(dosearch);
 E void NDECL(sokoban_detect);
+E void NDECL(dump_map);
 E void FDECL(reveal_terrain, (int, int));
 
 /* ### dig.c ### */
@@ -1351,12 +1354,13 @@ E void FDECL(unstuck, (struct monst *));
 E void FDECL(killed, (struct monst *));
 E void FDECL(xkilled, (struct monst *, int));
 E void FDECL(mon_to_stone, (struct monst *));
+E void FDECL(m_into_limbo, (struct monst *));
 E void FDECL(mnexto, (struct monst *));
 E void FDECL(maybe_mnexto, (struct monst *));
 E boolean FDECL(mnearto, (struct monst *, XCHAR_P, XCHAR_P, BOOLEAN_P));
 E void FDECL(m_respond, (struct monst *));
-E void FDECL(setmangry, (struct monst *, boolean));
-E void FDECL(wakeup, (struct monst *, boolean));
+E void FDECL(setmangry, (struct monst *, BOOLEAN_P));
+E void FDECL(wakeup, (struct monst *, BOOLEAN_P));
 E void NDECL(wake_nearby);
 E void FDECL(wake_nearto, (int, int, int));
 E void FDECL(seemimic, (struct monst *));
@@ -1417,6 +1421,7 @@ E int FDECL(pronoun_gender, (struct monst *));
 E boolean FDECL(levl_follower, (struct monst *));
 E int FDECL(little_to_big, (int));
 E int FDECL(big_to_little, (int));
+E boolean FDECL(big_little_match, (int, int));
 E const char *FDECL(locomotion, (const struct permonst *, const char *));
 E const char *FDECL(stagger, (const struct permonst *, const char *));
 E const char *FDECL(on_fire, (struct permonst *, struct attack *));
@@ -1797,7 +1802,12 @@ E boolean FDECL(is_autopickup_exception, (struct obj *, BOOLEAN_P));
 
 /* ### pline.c ### */
 
+#ifdef DUMPLOG
+E void FDECL(dumplogmsg, (const char *));
+E void NDECL(dumplogfreemessages);
+#endif
 E void VDECL(pline, (const char *, ...)) PRINTF_F(1, 2);
+E void VDECL(custompline, (unsigned, const char *, ...)) PRINTF_F(2, 3);
 E void VDECL(Norep, (const char *, ...)) PRINTF_F(1, 2);
 E void NDECL(free_youbuf);
 E void VDECL(You, (const char *, ...)) PRINTF_F(1, 2);
@@ -2281,8 +2291,8 @@ E boolean FDECL(stucksteed, (BOOLEAN_P));
 
 E boolean FDECL(goodpos, (int, int, struct monst *, unsigned));
 E boolean FDECL(enexto, (coord *, XCHAR_P, XCHAR_P, struct permonst *));
-E boolean
-FDECL(enexto_core, (coord *, XCHAR_P, XCHAR_P, struct permonst *, unsigned));
+E boolean FDECL(enexto_core, (coord *, XCHAR_P, XCHAR_P,
+                              struct permonst *, unsigned));
 E void FDECL(teleds, (int, int, BOOLEAN_P));
 E boolean FDECL(safe_teleds, (BOOLEAN_P));
 E boolean FDECL(teleport_pet, (struct monst *, BOOLEAN_P));
@@ -2292,13 +2302,13 @@ E int NDECL(dotele);
 E void NDECL(level_tele);
 E void FDECL(domagicportal, (struct trap *));
 E void FDECL(tele_trap, (struct trap *));
-E void FDECL(level_tele_trap, (struct trap *));
+E void FDECL(level_tele_trap, (struct trap *, unsigned));
 E void FDECL(rloc_to, (struct monst *, int, int));
 E boolean FDECL(rloc, (struct monst *, BOOLEAN_P));
 E boolean FDECL(tele_restrict, (struct monst *));
 E void FDECL(mtele_trap, (struct monst *, struct trap *, int));
-E int FDECL(mlevel_tele_trap,
-            (struct monst *, struct trap *, BOOLEAN_P, int));
+E int FDECL(mlevel_tele_trap, (struct monst *, struct trap *,
+                               BOOLEAN_P, int));
 E boolean FDECL(rloco, (struct obj *));
 E int NDECL(random_teleport_level);
 E boolean FDECL(u_teleport_mon, (struct monst *, BOOLEAN_P));
@@ -2709,6 +2719,11 @@ E void FDECL(genl_status_update, (int, genericptr_t, int, int));
 E void FDECL(genl_status_threshold, (int, int, anything, int, int, int));
 #endif
 #endif
+
+E void FDECL(dump_open_log, (time_t));
+E void NDECL(dump_close_log);
+E void FDECL(dump_redirect, (BOOLEAN_P));
+E void FDECL(dump_forward_putstr, (winid, int, const char*, int));
 
 /* ### wizard.c ### */
 
