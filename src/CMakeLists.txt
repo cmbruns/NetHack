@@ -5,10 +5,10 @@ endif()
 install(TARGETS nhdefkey DESTINATION .)
 
 install(FILES
+	../winnt/sysconf
 	../winnt/defaults.nh
 	../doc/Guidebook.txt
-	../dat/license
-	
+	../dat/license	
 	DESTINATION .)	
 
 set(NH_SRCS
@@ -139,3 +139,11 @@ set(NH_SRCS
 add_executable(NetHack ${NH_SRCS})
 target_link_libraries(NetHack winmm.lib) # Avoid sndPlaySound link error
 install(TARGETS NetHack DESTINATION .)
+
+# Allow running NetHack from build folder
+set_target_properties(NetHack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${STAGING_DIRECTORY})
+set_target_properties(NetHack PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${STAGING_DIRECTORY})
+set_target_properties(NetHack PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${STAGING_DIRECTORY})
+if(MSVC)
+  configure_file(../sys/winnt/sysconf ${STAGING_DIRECTORY}/sysconf)
+endif()

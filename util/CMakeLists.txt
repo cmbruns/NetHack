@@ -338,6 +338,11 @@ add_custom_target(GenerateTileC
 ### dlb_main ###
 ################
 
+# Copy other files from source folder
+foreach(THING tribute porthelp help hh cmdhelp history opthelp wizhelp license)
+	configure_file(../dat/${THING} ${CMAKE_BINARY_DIR}/dat/${THING} COPYONLY)
+endforeach()
+
 if (NETHACK_USE_DATA_LIBRARIAN)
 	add_executable(dlb_main
 	  ${CMAKE_SOURCE_DIR}/src/alloc.c
@@ -346,15 +351,57 @@ if (NETHACK_USE_DATA_LIBRARIAN)
 	  ${CMAKE_SOURCE_DIR}/util/panic.c
 	)
 
+	# create input file "dlb.lst" for dlb_main, used to create nhdat file
+	#############
+	#    echo data >dlb.lst
+        #    echo oracles >>dlb.lst
+        #    if exist options echo options >>dlb.lst
+        #    if exist ttyoptions echo ttyoptions >>dlb.lst
+        #    if exist guioptions echo guioptions >>dlb.lst
+        #    if exist porthelp echo porthelp >>dlb.lst
+        #    echo quest.dat >>dlb.lst
+        #    echo rumors >>dlb.lst
+        #    echo engrave >>dlb.lst
+        #    echo epitaph >>dlb.lst
+        #    echo bogusmon >>dlb.lst
+        #    echo tribute >>dlb.lst
+        #    echo help >>dlb.lst
+        #    echo hh >>dlb.lst
+        #    echo cmdhelp >>dlb.lst
+        #    echo history >>dlb.lst
+        #    echo opthelp >>dlb.lst
+        #    echo wizhelp >>dlb.lst
+        #    echo dungeon >>dlb.lst
+        #    echo license >>dlb.lst
+        #    for %%N in (*.lev) do echo %%N >>dlb.lst
+	set(DLB_LIST_FILE ${CMAKE_BINARY_DIR}/dat/dlb.lst)
+	file(WRITE ${DLB_LIST_FILE} "data \n")
+	file(APPEND ${DLB_LIST_FILE} "oracles \n")
+	foreach(THING options ttyoptions guioptions porthelp)
+	if (EXISTS ${CMAKE_BINARY_DIR}/dat/${THING})
+		file(APPEND ${DLB_LIST_FILE} "${THING} \n")
+	endif()
+	endforeach()
+	foreach(THING quest.dat rumors engrave epitaph bogusmon tribute help 
+				hh cmdhelp history opthelp wizhelp dungeon license)
+		file(APPEND ${DLB_LIST_FILE} "${THING} \n")
+	endforeach()
+	file(GLOB LEV_FILES RELATIVE "${CMAKE_BINARY_DIR}/dat" "${CMAKE_CURRENT_BINARY_DIR}/../dat/*.lev")
+	foreach(LEV_FILE ${LEV_FILES})
+		# message(${LEV_FILE})
+		file(APPEND ${DLB_LIST_FILE} "${LEV_FILE} \n")
+	endforeach()
+	
 	add_custom_command(
-	  OUTPUT ${CMAKE_BINARY_DIR}/dat/dlb.lst
+	  OUTPUT ${STAGING_DIRECTORY}/nhdat
+	  COMMAND dlb_main ARGS cIf dlb.lst ${STAGING_DIRECTORY}/nhdat
+	  DEPENDS dlb_main
 	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/dat
-	  # TODO: Lots of commands go here...
-	  COMMENT "Packaging via DLB"
+	  COMMENT "Packaging nhdat via DLB"
 	)
 
 	add_custom_target(PackageDLB ALL
-	  DEPENDS ${CMAKE_BINARY_DIR}/dat/dlb.lst
+	  DEPENDS ${STAGING_DIRECTORY}/nhdat
 	  COMMENT "Checking if DLB packaging is done"
 	)
 endif()

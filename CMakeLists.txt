@@ -16,6 +16,8 @@ if (NETHACK_USE_DATA_LIBRARIAN)
   add_definitions("-D DLB")
 endif()
 
+set(STAGING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/staging)
+
 # Build makedefs first, before anything else
 add_subdirectory(util)
 
