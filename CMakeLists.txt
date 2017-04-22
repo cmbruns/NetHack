@@ -10,6 +10,7 @@ if (MSVC)
 endif()
 
 include_directories(include)
+include_directories(${CMAKE_BINARY_DIR}/include) # for generated sources
 
 option(NETHACK_USE_DATA_LIBRARIAN "Use DLB Data Librarian" TRUE)
 if (NETHACK_USE_DATA_LIBRARIAN)
