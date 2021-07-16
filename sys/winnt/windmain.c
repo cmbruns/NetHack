@@ -247,7 +247,14 @@ set_default_prefix_locations(const char *programPath)
     static char versioned_global_data_path[MAX_PATH];
     static char versioninfo[20];
 
-    strcpy(executable_path, get_executable_path());
+    // Parse working folder from programPath, derived from argv[0], not from get_executable_path()
+    // static char drive[MAX_PATH];
+    static char dir[MAX_PATH];
+    static char filename[MAX_PATH];
+    static char ext[MAX_PATH];
+    _splitpath(programPath, executable_path, dir, filename, ext);
+    strcat(executable_path, dir);
+
     append_slash(executable_path);
 
     if (test_portable_config(executable_path,
@@ -406,11 +413,10 @@ copy_hack_content()
  * to help MinGW decide which entry point to choose. If both main and
  * WinMain exist, the resulting executable won't work correctly.
  */
-int
 #ifndef __MINGW32__ 
-main(argc, argv)
+__declspec(dllexport) int main(argc, argv)
 #else
-mingw_main(argc, argv)
+int mingw_main(argc, argv)
 #endif
 int argc;
 char *argv[];
