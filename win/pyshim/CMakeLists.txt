@@ -47,12 +47,12 @@ include(nethackdll)
 
 message("${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
-add_custom_command(
-    TARGET NetHackDLL POST_BUILD
+add_custom_target(
+    CopyPythonFiles ALL
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/nhvr.py $<TARGET_FILE_DIR:NetHackDLL>/nhvr.py
+    DEPENDS $<TARGET_FILE_DIR:NetHackDLL>/nhvr.py
     COMMENT "Copying nhvr.py to $<TARGET_FILE_DIR:NetHackDLL>"
-    # DEPFILE ${CMAKE_CURRENT_SOURCE_DIR}/nhvr.py
-    # BYPRODUCTS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nhvr.py
+    BYPRODOCTS $<TARGET_FILE_DIR:NetHackDLL>/nhvr.py
 )
 
 # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/nhvr.py ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/nhvr.py COPYONLY)
