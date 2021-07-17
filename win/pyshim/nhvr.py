@@ -7,6 +7,9 @@ from PySide6 import QtCore, QtWidgets
 
 
 class NethackWorker(QtCore.QObject):
+    """
+    Nethack game process that runs in it's own thread.
+    """
     finished = QtCore.Signal()
 
     def __init__(self, thread: QtCore.QThread):
@@ -42,6 +45,7 @@ class NethackWorker(QtCore.QObject):
 
 
 # sketch in Qt event loop
+# TODO: shut down nethack gracefully on quit
 class NethackVrApp(QtWidgets.QApplication):
     def __init__(self):
         super().__init__(sys.argv)
