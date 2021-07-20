@@ -1,0 +1,5 @@
+
+TODO: Build more targets with CMake. For now it is necessary to build win/win32/Nethack first, before building win/pyshim and running bin/nhvr.py
+
+To test console nethack, set PyCharm bin/nhvr.py Configuration to
+    "Emulate terminal in output console"
